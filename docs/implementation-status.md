@@ -15,6 +15,12 @@
 - Added config loader wiring in CLI commands.
 - Added render outputs for VS Code, Claude Code, and Kiro into `generated/agents`.
 - Added resolved environment output into `generated/env/resolved.env`.
+- Added managed file mapping model and canonical config entries.
+- Added generated chezmoi manifest output in `generated/chezmoi/managed-files.toml`.
+- Seeded initial managed templates:
+  - `templates/bash/dot_bashrc.tmpl`
+  - `templates/nushell/config.nu`
+  - `templates/starship/starship.toml`
 - Added JS workspace scaffolding (`skills`, `agents`) and bun/npm install flows.
 - Added helper scripts:
   - `scripts/bootstrap.sh`
@@ -31,8 +37,8 @@
 
 ## Next implementation items
 
-1. Add chezmoi state layout and first managed dotfile mappings.
-2. Add Atuin bootstrap/import/sync config wiring.
-3. Expand renderer payloads from placeholders to full target-specific schemas.
-4. Add deterministic profile precedence tests.
-5. Wire bun/npm lockfile and reproducibility checks into CI tasks.
+1. Add Atuin bootstrap/import/sync config wiring.
+2. Expand renderer payloads from placeholders to full target-specific schemas.
+3. Add more deterministic profile precedence tests for host and interactive overrides.
+4. Wire bun/npm lockfile and reproducibility checks into CI tasks.
+5. Add chezmoi apply/diff integration command wiring.

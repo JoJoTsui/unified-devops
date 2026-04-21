@@ -50,6 +50,7 @@ pub fn plan() -> Result<()> {
     let env = merged_env(&profiles);
     println!("plan: matched profiles = {}", profiles.len());
     println!("plan: resolved env vars = {}", env.len());
+    println!("plan: managed files = {}", config.managed_files.len());
     println!("plan: agents in scope = vscode, claude_code, kiro");
     Ok(())
 }
@@ -111,6 +112,7 @@ fn write_generated(config: &PlatformConfig) -> Result<()> {
         env.into_iter().map(|item| (item.key, item.value)).collect();
 
     fs::create_dir_all("generated/agents")?;
+    fs::create_dir_all("generated/chezmoi")?;
     fs::create_dir_all("generated/env")?;
 
     fs::write(
@@ -129,6 +131,10 @@ fn write_generated(config: &PlatformConfig) -> Result<()> {
     fs::write(
         "generated/env/resolved.env",
         render::render_env_pairs(&env_pairs),
+    )?;
+    fs::write(
+        "generated/chezmoi/managed-files.toml",
+        render::render_chezmoi_manifest(config),
     )?;
 
     Ok(())

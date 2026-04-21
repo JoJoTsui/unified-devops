@@ -1,5 +1,18 @@
 {
-  "phase": "phase-1",
   "agent": "claude_code",
-  "enabled": true
+  "enabled": true,
+  "env": {
+    "CHOKIDAR_USEPOLLING": "1",
+    "EDITOR": "hx",
+    "PHASE1_SHELL": "bash"
+  },
+  "phase": "phase-1",
+  "tools": {
+    "atuin": "# atuin enabled: true\n",
+    "bun": "# bun enabled: true\n",
+    "chezmoi": "# chezmoi enabled: true\n",
+    "direnv": "# direnv enabled: true\n",
+    "just": "# just enabled: true\n",
+    "npm": "# npm enabled: true\n"
+  }
 }

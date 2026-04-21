@@ -2,6 +2,24 @@
 name = "unified-shell-platform"
 phase = "phase-1"
 
+[[managed_files]]
+name = "bashrc"
+source = "templates/bash/dot_bashrc.tmpl"
+target = "~/.bashrc"
+template = true
+
+[[managed_files]]
+name = "nushell-config"
+source = "templates/nushell/config.nu"
+target = "~/.config/nushell/config.nu"
+template = false
+
+[[managed_files]]
+name = "starship"
+source = "templates/starship/starship.toml"
+target = "~/.config/starship.toml"
+template = false
+
 [tools.chezmoi]
 enabled = true
 source = "adopted"

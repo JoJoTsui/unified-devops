@@ -22,15 +22,19 @@ Phase 1 scaffold for a portable dotfiles and devops platform.
 
 ## Current Status
 
-This repo currently contains the first scaffold:
+This repo currently contains a runnable Phase 1 baseline:
 
 - Rust CLI entrypoints
 - Canonical config model
-- Initial README and docs structure
+- Context-aware profile resolution and env merging
+- Generated agent artifacts under `generated/agents`
+- Generated environment artifact under `generated/env/resolved.env`
+- Generated chezmoi manifest under `generated/chezmoi/managed-files.toml`
+- Initial managed template payloads for bash, nushell, and starship
 
 ## Next Steps
 
-1. Add config rendering for shells and agent IDEs.
-2. Add chezmoi/atuin/just integration.
-3. Add OS and shell variable resolution.
-4. Add bun/npm install flows for skills and agents.
+1. Add Atuin bootstrap/import/sync integration.
+2. Expand renderer payloads to target-specific schemas.
+3. Wire chezmoi apply/diff execution path.
+4. Add lockfile/reproducibility checks for skills and agents.

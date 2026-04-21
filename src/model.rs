@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 pub struct PlatformConfig {
     pub core: CoreConfig,
     pub profiles: Vec<Profile>,
+    pub managed_files: Vec<ManagedFile>,
     pub tools: ToolSet,
     pub agents: AgentSet,
 }
@@ -33,6 +34,15 @@ pub struct Profile {
 pub struct EnvVar {
     pub key: String,
     pub value: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(default)]
+pub struct ManagedFile {
+    pub name: String,
+    pub source: String,
+    pub target: String,
+    pub template: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]

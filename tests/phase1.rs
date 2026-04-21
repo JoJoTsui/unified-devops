@@ -34,6 +34,7 @@ fn profile_resolution_prefers_specific_overlay() {
                 ..Default::default()
             },
         ],
+        managed_files: vec![],
         tools: ToolSet::default(),
         agents: AgentSet::default(),
     };
@@ -62,6 +63,7 @@ fn renders_agent_outputs_with_env_and_tool_summary() {
             phase: "phase-1".into(),
         },
         profiles: vec![],
+        managed_files: vec![],
         tools: ToolSet::default(),
         agents: AgentSet::default(),
     };

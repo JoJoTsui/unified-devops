@@ -1,4 +1,5 @@
 use crate::model::{PlatformConfig, ToolSpec};
+use serde::Serialize;
 use serde_json::json;
 
 pub fn render_vscode(config: &PlatformConfig, env_pairs: &[(String, String)]) -> String {
@@ -84,6 +85,18 @@ pub fn render_env_pairs(pairs: &[(String, String)]) -> String {
     output
 }
 
+pub fn render_chezmoi_manifest(config: &PlatformConfig) -> String {
+    #[derive(Serialize)]
+    struct ChezmoiManifest<'a> {
+        managed_files: &'a [crate::model::ManagedFile],
+    }
+
+    toml::to_string_pretty(&ChezmoiManifest {
+        managed_files: &config.managed_files,
+    })
+    .unwrap_or_else(|_| "managed_files = []\n".to_string())
+}
+
 fn env_object(env_pairs: &[(String, String)]) -> serde_json::Value {
     let mut map = serde_json::Map::new();
     for (key, value) in env_pairs {
@@ -106,10 +119,34 @@ fn tool_summary(config: &PlatformConfig) -> serde_json::Value {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::model::{AgentSet, CoreConfig, ManagedFile, PlatformConfig, ToolSet};
 
     #[test]
     fn render_pairs_as_env_lines() {
         let rendered = render_env_pairs(&[("A".into(), "1".into())]);
         assert!(rendered.contains("A=1"));
+    }
+
+    #[test]
+    fn render_chezmoi_manifest_contains_targets() {
+        let config = PlatformConfig {
+            core: CoreConfig {
+                name: "demo".into(),
+                phase: "phase-1".into(),
+            },
+            profiles: vec![],
+            managed_files: vec![ManagedFile {
+                name: "bashrc".into(),
+                source: "templates/bash/dot_bashrc.tmpl".into(),
+                target: "~/.bashrc".into(),
+                template: true,
+            }],
+            tools: ToolSet::default(),
+            agents: AgentSet::default(),
+        };
+
+        let manifest = render_chezmoi_manifest(&config);
+        assert!(manifest.contains("managed_files"));
+        assert!(manifest.contains("~/.bashrc"));
     }
 }
