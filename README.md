@@ -31,12 +31,14 @@ This repo currently contains a runnable Phase 1 baseline:
 - Generated environment artifact under `generated/env/resolved.env`
 - Generated Atuin config under `generated/atuin/config.toml`
 - Generated chezmoi manifest under `generated/chezmoi/managed-files.toml`
+- Generated chezmoi source-state tree under `generated/chezmoi/source-state`
 - Initial managed template payloads for bash, nushell, and starship
 - Atuin bootstrap helper script and task entrypoint
+- CLI wiring for `chezmoi diff/apply` execution when chezmoi is installed
 
 ## Next Steps
 
 1. Expand renderer payloads to target-specific schemas.
-2. Wire chezmoi apply/diff execution path.
-3. Add lockfile/reproducibility checks for skills and agents.
-4. Add Atuin login/key bootstrap flow for first-time hosts.
+2. Add lockfile/reproducibility checks for skills and agents.
+3. Add Atuin login/key bootstrap flow for first-time hosts.
+4. Add rollback behavior for generated + applied chezmoi state.

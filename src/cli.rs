@@ -5,7 +5,8 @@ use crate::resolver::{merged_env, resolve_profile, Context};
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use std::process::Command;
 
 #[derive(Debug, Parser)]
 #[command(
@@ -59,6 +60,7 @@ pub fn plan() -> Result<()> {
 pub fn apply() -> Result<()> {
     let config = load_config()?;
     write_generated(&config)?;
+    maybe_run_chezmoi_apply(&config)?;
     println!("apply: generated phase-1 artifacts in generated/");
     Ok(())
 }
@@ -76,7 +78,10 @@ pub fn rollback() -> Result<()> {
 }
 
 pub fn integrate() -> Result<()> {
-    println!("integrate: scaffolded integration command");
+    let config = load_config()?;
+    write_generated(&config)?;
+    maybe_run_chezmoi_diff(&config)?;
+    println!("integrate: executed generated artifact + chezmoi diff flow");
     println!("phase-1 tools: chezmoi, atuin, just, direnv, bun, npm");
     println!("phase-1 agent targets: vscode, claude_code, kiro");
     Ok(())
@@ -142,6 +147,142 @@ fn write_generated(config: &PlatformConfig) -> Result<()> {
         "generated/chezmoi/managed-files.toml",
         render::render_chezmoi_manifest(config),
     )?;
+    write_chezmoi_source_state(config)?;
 
     Ok(())
+}
+
+fn write_chezmoi_source_state(config: &PlatformConfig) -> Result<()> {
+    let source_root = Path::new("generated/chezmoi/source-state");
+    fs::create_dir_all(source_root)?;
+
+    for managed in &config.managed_files {
+        let src = Path::new(&managed.source);
+        if !src.exists() {
+            println!("chezmoi: source missing, skipping: {}", managed.source);
+            continue;
+        }
+
+        let rel = map_target_to_chezmoi_path(&managed.target, managed.template);
+        let dest = source_root.join(rel);
+        if let Some(parent) = dest.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        fs::copy(src, &dest)?;
+    }
+
+    Ok(())
+}
+
+fn map_target_to_chezmoi_path(target: &str, template: bool) -> PathBuf {
+    let trimmed = target.trim_start_matches("~/").trim_start_matches('/');
+    let mut parts: Vec<String> = trimmed
+        .split('/')
+        .filter(|segment| !segment.is_empty())
+        .map(segment_to_chezmoi)
+        .collect();
+
+    if parts.is_empty() {
+        parts.push("dot_placeholder".to_string());
+    }
+
+    if template {
+        let last = parts.len() - 1;
+        if !parts[last].ends_with(".tmpl") {
+            parts[last].push_str(".tmpl");
+        }
+    }
+
+    parts.into_iter().collect()
+}
+
+fn segment_to_chezmoi(segment: &str) -> String {
+    if let Some(stripped) = segment.strip_prefix('.') {
+        if stripped.is_empty() {
+            return "dot_".to_string();
+        }
+        return format!("dot_{stripped}");
+    }
+    segment.to_string()
+}
+
+fn maybe_run_chezmoi_diff(config: &PlatformConfig) -> Result<()> {
+    let enabled = config
+        .tools
+        .chezmoi
+        .as_ref()
+        .map(|tool| tool.enabled)
+        .unwrap_or(false);
+
+    if !enabled {
+        println!("chezmoi: disabled in config; skipping diff");
+        return Ok(());
+    }
+
+    run_chezmoi_subcommand("diff")
+}
+
+fn maybe_run_chezmoi_apply(config: &PlatformConfig) -> Result<()> {
+    let enabled = config
+        .tools
+        .chezmoi
+        .as_ref()
+        .map(|tool| tool.enabled)
+        .unwrap_or(false);
+
+    if !enabled {
+        println!("chezmoi: disabled in config; skipping apply");
+        return Ok(());
+    }
+
+    run_chezmoi_subcommand("apply")
+}
+
+fn run_chezmoi_subcommand(subcommand: &str) -> Result<()> {
+    if !command_exists("chezmoi") {
+        println!("chezmoi: not installed; skipping {subcommand}");
+        return Ok(());
+    }
+
+    let source_path = Path::new("generated/chezmoi/source-state");
+    let status = Command::new("chezmoi")
+        .arg(subcommand)
+        .arg("--source-path")
+        .arg(source_path)
+        .arg("--destination")
+        .arg(home_dir())
+        .status()?;
+
+    if !status.success() {
+        return Err(anyhow::anyhow!(
+            "chezmoi {} failed with status {}",
+            subcommand,
+            status
+        ));
+    }
+
+    println!("chezmoi: {} completed", subcommand);
+    Ok(())
+}
+
+fn command_exists(command: &str) -> bool {
+    Command::new(command).arg("--version").output().is_ok()
+}
+
+fn home_dir() -> String {
+    std::env::var("HOME").unwrap_or_else(|_| "~".to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn map_target_to_chezmoi_path_handles_dot_paths() {
+        let mapped = map_target_to_chezmoi_path("~/.config/nushell/config.nu", false);
+        assert_eq!(mapped, PathBuf::from("dot_config/nushell/config.nu"));
+
+        let mapped_template = map_target_to_chezmoi_path("~/.bashrc", true);
+        assert_eq!(mapped_template, PathBuf::from("dot_bashrc.tmpl"));
+    }
 }
