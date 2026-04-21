@@ -16,6 +16,9 @@ sync:
 rollback:
 	cargo run -- rollback
 
+rollback-preview:
+	cargo run -- rollback --preview
+
 integrate:
 	cargo run -- integrate
 

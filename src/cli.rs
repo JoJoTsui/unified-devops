@@ -30,7 +30,10 @@ pub enum Commands {
     Plan,
     Apply,
     Sync,
-    Rollback,
+    Rollback {
+        #[arg(long)]
+        preview: bool,
+    },
     Integrate,
 }
 
@@ -90,13 +93,25 @@ pub fn sync() -> Result<()> {
     Ok(())
 }
 
-pub fn rollback() -> Result<()> {
+pub fn rollback(preview: bool) -> Result<()> {
     if !Path::new(DEPLOY_STATE_PATH).exists() {
         println!("rollback: no deploy state found; nothing to do");
         return Ok(());
     }
 
     let state = load_deploy_state()?;
+
+    if preview {
+        println!(
+            "rollback preview: would restore {} managed targets",
+            state.managed_backups.len()
+        );
+        for line in rollback_preview_lines(&state) {
+            println!("{line}");
+        }
+        return Ok(());
+    }
+
     restore_managed_targets(&state)?;
 
     if state.chezmoi_apply_succeeded {
@@ -427,6 +442,33 @@ fn current_timestamp_unix() -> u64 {
         .unwrap_or(0)
 }
 
+fn rollback_preview_lines(state: &DeployState) -> Vec<String> {
+    let mut lines = Vec::new();
+    for backup in &state.managed_backups {
+        let target = expand_target_path(&backup.target);
+        if backup.existed {
+            lines.push(format!(
+                "would restore {} from {}",
+                target.display(),
+                backup.backup_path
+            ));
+        } else {
+            lines.push(format!("would remove {}", target.display()));
+        }
+    }
+
+    for path in &state.generated_paths {
+        lines.push(format!("would remove generated path {path}"));
+    }
+
+    lines.push(format!("would remove deploy state {}", DEPLOY_STATE_PATH));
+    lines.push(format!(
+        "would remove rollback backups {}",
+        ROLLBACK_BACKUP_ROOT
+    ));
+    lines
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -444,5 +486,27 @@ mod tests {
     fn sanitize_target_for_backup_is_stable() {
         let sanitized = sanitize_target_for_backup("~/.config/nushell/config.nu");
         assert_eq!(sanitized, "home__dotconfig__nushell__configdotnu");
+    }
+
+    #[test]
+    fn rollback_preview_lines_include_restore_and_cleanup() {
+        let state = DeployState {
+            version: "phase-1".into(),
+            timestamp_unix: 1,
+            managed_backups: vec![ManagedBackup {
+                target: "~/.bashrc".into(),
+                backup_path: "generated/rollback-backups/home__dotbashrc.bak".into(),
+                existed: true,
+            }],
+            generated_paths: vec!["generated/env/resolved.env".into()],
+            chezmoi_apply_attempted: true,
+            chezmoi_apply_succeeded: true,
+        };
+
+        let lines = rollback_preview_lines(&state);
+        assert!(lines.iter().any(|line| line.contains("would restore")));
+        assert!(lines
+            .iter()
+            .any(|line| line.contains("generated/env/resolved.env")));
     }
 }

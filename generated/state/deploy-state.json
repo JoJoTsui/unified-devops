@@ -1,0 +1,30 @@
+{
+  "version": "phase-1",
+  "timestamp_unix": 1776776304,
+  "managed_backups": [
+    {
+      "target": "~/.bashrc",
+      "backup_path": "generated/rollback-backups/home__dotbashrc.bak",
+      "existed": true
+    },
+    {
+      "target": "~/.config/nushell/config.nu",
+      "backup_path": "generated/rollback-backups/home__dotconfig__nushell__configdotnu.bak",
+      "existed": false
+    },
+    {
+      "target": "~/.config/starship.toml",
+      "backup_path": "generated/rollback-backups/home__dotconfig__starshipdottoml.bak",
+      "existed": false
+    }
+  ],
+  "generated_paths": [
+    "generated/agents",
+    "generated/atuin/config.toml",
+    "generated/chezmoi/managed-files.toml",
+    "generated/chezmoi/source-state",
+    "generated/env/resolved.env"
+  ],
+  "chezmoi_apply_attempted": false,
+  "chezmoi_apply_succeeded": false
+}

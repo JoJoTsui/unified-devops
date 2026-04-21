@@ -25,6 +25,7 @@
 - Added deploy-state persistence at `generated/state/deploy-state.json` during apply.
 - Added rollback backup snapshots under `generated/rollback-backups` and restore logic for managed targets.
 - Implemented rollback cleanup for generated artifacts and deploy-state metadata.
+- Added rollback preview mode via `cargo run -- rollback --preview` and `just rollback-preview`.
 - Seeded initial managed templates:
   - `templates/bash/dot_bashrc.tmpl`
   - `templates/nushell/config.nu`
@@ -49,4 +50,4 @@
 2. Add more deterministic profile precedence tests for host and interactive overrides.
 3. Wire bun/npm lockfile and reproducibility checks into CI tasks.
 4. Add Atuin login/key management flow for first-time host bootstrap.
-5. Add optional dry-run rollback mode for audit/preview before restore.
+5. Add additional safety checks before live rollback on hosts with active sessions.

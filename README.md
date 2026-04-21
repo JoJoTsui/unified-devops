@@ -36,10 +36,11 @@ This repo currently contains a runnable Phase 1 baseline:
 - Atuin bootstrap helper script and task entrypoint
 - CLI wiring for `chezmoi diff/apply` execution when chezmoi is installed
 - Deploy-state tracking and rollback restore flow for managed targets
+- Rollback preview mode via `cargo run -- rollback --preview`
 
 ## Next Steps
 
 1. Expand renderer payloads to target-specific schemas.
 2. Add lockfile/reproducibility checks for skills and agents.
 3. Add Atuin login/key bootstrap flow for first-time hosts.
-4. Add rollback dry-run preview mode.
+4. Add additional rollback safety checks for active sessions.
