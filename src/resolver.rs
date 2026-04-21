@@ -18,8 +18,16 @@ pub fn resolve_profile<'a>(config: &'a PlatformConfig, ctx: &Context) -> Vec<&'a
 }
 
 fn matches_context(profile: &Profile, ctx: &Context) -> bool {
-    let os_ok = profile.os.as_ref().map(|value| value == &ctx.os).unwrap_or(true);
-    let shell_ok = profile.shell.as_ref().map(|value| value == &ctx.shell).unwrap_or(true);
+    let os_ok = profile
+        .os
+        .as_ref()
+        .map(|value| value == &ctx.os)
+        .unwrap_or(true);
+    let shell_ok = profile
+        .shell
+        .as_ref()
+        .map(|value| value == &ctx.shell)
+        .unwrap_or(true);
     let agent_ok = profile
         .agent_ide
         .as_ref()

@@ -34,9 +34,7 @@ pub fn render_kiro(config: &PlatformConfig) -> String {
         .map(|tool| tool.enabled)
         .unwrap_or(false);
 
-    format!(
-        "{{\n  \"phase\": \"phase-1\",\n  \"agent\": \"kiro\",\n  \"enabled\": {enabled}\n}}\n"
-    )
+    format!("{{\n  \"phase\": \"phase-1\",\n  \"agent\": \"kiro\",\n  \"enabled\": {enabled}\n}}\n")
 }
 
 pub fn render_tool_spec(name: &str, tool: Option<&ToolSpec>) -> String {

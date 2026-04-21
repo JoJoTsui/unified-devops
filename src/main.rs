@@ -1,8 +1,8 @@
-mod model;
 mod cli;
-mod resolver;
-mod render;
 mod integrations;
+mod model;
+mod render;
+mod resolver;
 mod state;
 
 use anyhow::Result;

@@ -1,14 +1,18 @@
-use anyhow::Result;
-use clap::{Parser, Subcommand};
 use crate::integrations;
 use crate::model::PlatformConfig;
 use crate::render;
 use crate::resolver::{merged_env, resolve_profile, Context};
+use anyhow::Result;
+use clap::{Parser, Subcommand};
 use std::fs;
 use std::path::Path;
 
 #[derive(Debug, Parser)]
-#[command(author, version, about = "Unified shell and agent platform orchestrator")]
+#[command(
+    author,
+    version,
+    about = "Unified shell and agent platform orchestrator"
+)]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
@@ -28,8 +32,14 @@ pub fn doctor() -> Result<()> {
     let config = load_config()?;
     println!("doctor: Phase 1 scaffold is present");
     println!("config: {} ({})", config.core.name, config.core.phase);
-    println!("compiled preferred tools: {:?}", integrations::supported_compiled_tools());
-    println!("compat fallback tools: {:?}", integrations::supported_fallback_tools());
+    println!(
+        "compiled preferred tools: {:?}",
+        integrations::supported_compiled_tools()
+    );
+    println!(
+        "compat fallback tools: {:?}",
+        integrations::supported_fallback_tools()
+    );
     Ok(())
 }
 
@@ -81,7 +91,11 @@ fn default_context() -> Context {
         os: std::env::consts::OS.to_string(),
         shell: std::env::var("SHELL")
             .ok()
-            .and_then(|path| Path::new(&path).file_name().map(|v| v.to_string_lossy().to_string()))
+            .and_then(|path| {
+                Path::new(&path)
+                    .file_name()
+                    .map(|v| v.to_string_lossy().to_string())
+            })
             .unwrap_or_else(|| "bash".to_string()),
         agent_ide: None,
         host_profile: Some("default".to_string()),
@@ -97,12 +111,22 @@ fn write_generated(config: &PlatformConfig) -> Result<()> {
     fs::create_dir_all("generated/agents")?;
     fs::create_dir_all("generated/env")?;
 
-    fs::write("generated/agents/vscode.json", render::render_vscode(config))?;
-    fs::write("generated/agents/claude_code.json", render::render_claude_code(config))?;
+    fs::write(
+        "generated/agents/vscode.json",
+        render::render_vscode(config),
+    )?;
+    fs::write(
+        "generated/agents/claude_code.json",
+        render::render_claude_code(config),
+    )?;
     fs::write("generated/agents/kiro.json", render::render_kiro(config))?;
 
-    let env_pairs: Vec<(String, String)> = env.into_iter().map(|item| (item.key, item.value)).collect();
-    fs::write("generated/env/resolved.env", render::render_env_pairs(&env_pairs))?;
+    let env_pairs: Vec<(String, String)> =
+        env.into_iter().map(|item| (item.key, item.value)).collect();
+    fs::write(
+        "generated/env/resolved.env",
+        render::render_env_pairs(&env_pairs),
+    )?;
 
     Ok(())
 }
