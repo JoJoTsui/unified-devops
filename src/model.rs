@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 pub struct PlatformConfig {
     pub core: CoreConfig,
     pub profiles: Vec<Profile>,
+    pub atuin: AtuinConfig,
     pub managed_files: Vec<ManagedFile>,
     pub tools: ToolSet,
     pub agents: AgentSet,
@@ -43,6 +44,36 @@ pub struct ManagedFile {
     pub source: String,
     pub target: String,
     pub template: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
+pub struct AtuinConfig {
+    pub enabled: bool,
+    pub auto_sync: bool,
+    pub sync_frequency: String,
+    pub db_path: String,
+    pub key_path: String,
+    pub records: bool,
+    pub filter_mode: String,
+    pub workspaces: bool,
+    pub timezone: String,
+}
+
+impl Default for AtuinConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            auto_sync: true,
+            sync_frequency: "10m".to_string(),
+            db_path: "~/.local/share/atuin/history.db".to_string(),
+            key_path: "~/.local/share/atuin/key".to_string(),
+            records: true,
+            filter_mode: "global".to_string(),
+            workspaces: true,
+            timezone: "local".to_string(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]

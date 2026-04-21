@@ -51,6 +51,7 @@ pub fn plan() -> Result<()> {
     println!("plan: matched profiles = {}", profiles.len());
     println!("plan: resolved env vars = {}", env.len());
     println!("plan: managed files = {}", config.managed_files.len());
+    println!("plan: atuin enabled = {}", config.atuin.enabled);
     println!("plan: agents in scope = vscode, claude_code, kiro");
     Ok(())
 }
@@ -112,6 +113,7 @@ fn write_generated(config: &PlatformConfig) -> Result<()> {
         env.into_iter().map(|item| (item.key, item.value)).collect();
 
     fs::create_dir_all("generated/agents")?;
+    fs::create_dir_all("generated/atuin")?;
     fs::create_dir_all("generated/chezmoi")?;
     fs::create_dir_all("generated/env")?;
 
@@ -131,6 +133,10 @@ fn write_generated(config: &PlatformConfig) -> Result<()> {
     fs::write(
         "generated/env/resolved.env",
         render::render_env_pairs(&env_pairs),
+    )?;
+    fs::write(
+        "generated/atuin/config.toml",
+        render::render_atuin_config(config),
     )?;
     fs::write(
         "generated/chezmoi/managed-files.toml",

@@ -1,5 +1,5 @@
 use unified_shell_platform::model::{
-    AgentSet, CoreConfig, EnvVar, PlatformConfig, Profile, ToolSet,
+    AgentSet, AtuinConfig, CoreConfig, EnvVar, PlatformConfig, Profile, ToolSet,
 };
 use unified_shell_platform::render;
 use unified_shell_platform::resolver::{merged_env, resolve_profile, Context};
@@ -34,6 +34,7 @@ fn profile_resolution_prefers_specific_overlay() {
                 ..Default::default()
             },
         ],
+        atuin: AtuinConfig::default(),
         managed_files: vec![],
         tools: ToolSet::default(),
         agents: AgentSet::default(),
@@ -63,6 +64,7 @@ fn renders_agent_outputs_with_env_and_tool_summary() {
             phase: "phase-1".into(),
         },
         profiles: vec![],
+        atuin: AtuinConfig::default(),
         managed_files: vec![],
         tools: ToolSet::default(),
         agents: AgentSet::default(),

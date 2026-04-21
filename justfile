@@ -18,3 +18,6 @@ rollback:
 
 integrate:
 	cargo run -- integrate
+
+atuin-bootstrap:
+	./scripts/atuin-bootstrap.sh

@@ -29,12 +29,14 @@ This repo currently contains a runnable Phase 1 baseline:
 - Context-aware profile resolution and env merging
 - Generated agent artifacts under `generated/agents`
 - Generated environment artifact under `generated/env/resolved.env`
+- Generated Atuin config under `generated/atuin/config.toml`
 - Generated chezmoi manifest under `generated/chezmoi/managed-files.toml`
 - Initial managed template payloads for bash, nushell, and starship
+- Atuin bootstrap helper script and task entrypoint
 
 ## Next Steps
 
-1. Add Atuin bootstrap/import/sync integration.
-2. Expand renderer payloads to target-specific schemas.
-3. Wire chezmoi apply/diff execution path.
-4. Add lockfile/reproducibility checks for skills and agents.
+1. Expand renderer payloads to target-specific schemas.
+2. Wire chezmoi apply/diff execution path.
+3. Add lockfile/reproducibility checks for skills and agents.
+4. Add Atuin login/key bootstrap flow for first-time hosts.

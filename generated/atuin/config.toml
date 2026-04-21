@@ -1,0 +1,9 @@
+enabled = true
+auto_sync = true
+sync_frequency = "10m"
+db_path = "~/.local/share/atuin/history.db"
+key_path = "~/.local/share/atuin/key"
+records = true
+filter_mode = "global"
+workspaces = true
+timezone = "local"

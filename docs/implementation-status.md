@@ -17,6 +17,9 @@
 - Added resolved environment output into `generated/env/resolved.env`.
 - Added managed file mapping model and canonical config entries.
 - Added generated chezmoi manifest output in `generated/chezmoi/managed-files.toml`.
+- Added canonical Atuin settings model in `config/platform.toml`.
+- Added generated Atuin config output in `generated/atuin/config.toml`.
+- Added Atuin bootstrap helper script `scripts/atuin-bootstrap.sh` and `just atuin-bootstrap` task.
 - Seeded initial managed templates:
   - `templates/bash/dot_bashrc.tmpl`
   - `templates/nushell/config.nu`
@@ -37,8 +40,8 @@
 
 ## Next implementation items
 
-1. Add Atuin bootstrap/import/sync config wiring.
-2. Expand renderer payloads from placeholders to full target-specific schemas.
-3. Add more deterministic profile precedence tests for host and interactive overrides.
-4. Wire bun/npm lockfile and reproducibility checks into CI tasks.
-5. Add chezmoi apply/diff integration command wiring.
+1. Expand renderer payloads from placeholders to full target-specific schemas.
+2. Add more deterministic profile precedence tests for host and interactive overrides.
+3. Wire bun/npm lockfile and reproducibility checks into CI tasks.
+4. Add chezmoi apply/diff integration command wiring.
+5. Add Atuin login/key management flow for first-time host bootstrap.

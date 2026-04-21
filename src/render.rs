@@ -85,6 +85,10 @@ pub fn render_env_pairs(pairs: &[(String, String)]) -> String {
     output
 }
 
+pub fn render_atuin_config(config: &PlatformConfig) -> String {
+    toml::to_string_pretty(&config.atuin).unwrap_or_else(|_| String::new())
+}
+
 pub fn render_chezmoi_manifest(config: &PlatformConfig) -> String {
     #[derive(Serialize)]
     struct ChezmoiManifest<'a> {
@@ -119,7 +123,7 @@ fn tool_summary(config: &PlatformConfig) -> serde_json::Value {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::{AgentSet, CoreConfig, ManagedFile, PlatformConfig, ToolSet};
+    use crate::model::{AgentSet, AtuinConfig, CoreConfig, ManagedFile, PlatformConfig, ToolSet};
 
     #[test]
     fn render_pairs_as_env_lines() {
@@ -135,6 +139,7 @@ mod tests {
                 phase: "phase-1".into(),
             },
             profiles: vec![],
+            atuin: AtuinConfig::default(),
             managed_files: vec![ManagedFile {
                 name: "bashrc".into(),
                 source: "templates/bash/dot_bashrc.tmpl".into(),
@@ -148,5 +153,27 @@ mod tests {
         let manifest = render_chezmoi_manifest(&config);
         assert!(manifest.contains("managed_files"));
         assert!(manifest.contains("~/.bashrc"));
+    }
+
+    #[test]
+    fn render_atuin_config_contains_sync_settings() {
+        let config = PlatformConfig {
+            core: CoreConfig {
+                name: "demo".into(),
+                phase: "phase-1".into(),
+            },
+            profiles: vec![],
+            atuin: AtuinConfig {
+                sync_frequency: "15m".into(),
+                ..AtuinConfig::default()
+            },
+            managed_files: vec![],
+            tools: ToolSet::default(),
+            agents: AgentSet::default(),
+        };
+
+        let rendered = render_atuin_config(&config);
+        assert!(rendered.contains("sync_frequency"));
+        assert!(rendered.contains("15m"));
     }
 }
