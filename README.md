@@ -33,7 +33,7 @@ This repo currently contains a runnable Phase 1 baseline:
 - Generated chezmoi manifest under `generated/chezmoi/managed-files.toml`
 - Generated chezmoi source-state tree under `generated/chezmoi/source-state`
 - Initial managed template payloads for bash, nushell, and starship
-- Atuin bootstrap helper script and task entrypoint
+- Atuin bootstrap helper script with login/import/sync/setup modes
 - CLI wiring for `chezmoi diff/apply` execution when chezmoi is installed
 - Deploy-state tracking and rollback restore flow for managed targets
 - Rollback preview mode via `cargo run -- rollback --preview`
@@ -42,5 +42,5 @@ This repo currently contains a runnable Phase 1 baseline:
 
 1. Expand renderer payloads to target-specific schemas.
 2. Add lockfile/reproducibility checks for skills and agents.
-3. Add Atuin login/key bootstrap flow for first-time hosts.
-4. Add additional rollback safety checks for active sessions.
+3. Add additional rollback safety checks for active sessions.
+4. Add host-aware detection for first-run Atuin state and login prompts.

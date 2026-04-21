@@ -24,3 +24,12 @@ integrate:
 
 atuin-bootstrap:
 	./scripts/atuin-bootstrap.sh
+
+atuin-login:
+	./scripts/atuin-bootstrap.sh login
+
+atuin-sync:
+	./scripts/atuin-bootstrap.sh sync
+
+atuin-setup:
+	./scripts/atuin-bootstrap.sh setup
