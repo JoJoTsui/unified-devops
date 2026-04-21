@@ -1,0 +1,9 @@
+{
+  "name": "unified-shell-platform-agents",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Shared agent installation workspace",
+  "scripts": {
+    "install": "echo agents install placeholder"
+  }
+}

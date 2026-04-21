@@ -1,0 +1,14 @@
+{
+  "name": "unified-shell-platform",
+  "private": true,
+  "workspaces": [
+    "skills",
+    "agents"
+  ],
+  "scripts": {
+    "skills:install:bun": "bun install --cwd skills",
+    "skills:install:npm": "npm install --prefix skills",
+    "agents:install:bun": "bun install --cwd agents",
+    "agents:install:npm": "npm install --prefix agents"
+  }
+}

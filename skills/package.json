@@ -1,0 +1,9 @@
+{
+  "name": "unified-shell-platform-skills",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Shared skills package workspace for agent tooling",
+  "scripts": {
+    "install": "echo skills install placeholder"
+  }
+}

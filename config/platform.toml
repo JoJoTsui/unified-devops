@@ -1,0 +1,85 @@
+[core]
+name = "unified-shell-platform"
+phase = "phase-1"
+
+[tools.chezmoi]
+enabled = true
+source = "adopted"
+
+[tools.atuin]
+enabled = true
+source = "adopted"
+
+[tools.just]
+enabled = true
+source = "adopted"
+
+[tools.direnv]
+enabled = true
+source = "adopted"
+
+[tools.bun]
+enabled = true
+source = "adopted"
+
+[tools.npm]
+enabled = true
+source = "adopted"
+
+[agents.vscode]
+enabled = true
+source = "adopted"
+
+[agents.claude_code]
+enabled = true
+source = "adopted"
+
+[agents.kiro]
+enabled = true
+source = "adopted"
+
+[[profiles]]
+name = "base"
+host_profile = "default"
+interactive = true
+
+[[profiles.vars]]
+key = "CHOKIDAR_USEPOLLING"
+value = "1"
+
+[[profiles.vars]]
+key = "EDITOR"
+value = "hx"
+
+[[profiles]]
+name = "linux-bash"
+os = "linux"
+shell = "bash"
+host_profile = "default"
+interactive = true
+
+[[profiles.vars]]
+key = "PHASE1_SHELL"
+value = "bash"
+
+[[profiles]]
+name = "linux-nushell"
+os = "linux"
+shell = "nu"
+host_profile = "default"
+interactive = true
+
+[[profiles.vars]]
+key = "PHASE1_SHELL"
+value = "nushell"
+
+[[profiles]]
+name = "kiro-agent"
+os = "linux"
+agent_ide = "kiro"
+host_profile = "default"
+interactive = true
+
+[[profiles.vars]]
+key = "PHASE1_AGENT"
+value = "kiro"
