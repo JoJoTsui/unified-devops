@@ -2,11 +2,16 @@ use crate::integrations;
 use crate::model::PlatformConfig;
 use crate::render;
 use crate::resolver::{merged_env, resolve_profile, Context};
+use crate::state::{DeployState, ManagedBackup};
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::time::{SystemTime, UNIX_EPOCH};
+
+const DEPLOY_STATE_PATH: &str = "generated/state/deploy-state.json";
+const ROLLBACK_BACKUP_ROOT: &str = "generated/rollback-backups";
 
 #[derive(Debug, Parser)]
 #[command(
@@ -60,7 +65,20 @@ pub fn plan() -> Result<()> {
 pub fn apply() -> Result<()> {
     let config = load_config()?;
     write_generated(&config)?;
-    maybe_run_chezmoi_apply(&config)?;
+    let mut deploy_state = create_deploy_state(&config)?;
+
+    match maybe_run_chezmoi_apply(&config)? {
+        true => {
+            deploy_state.chezmoi_apply_attempted = true;
+            deploy_state.chezmoi_apply_succeeded = true;
+        }
+        false => {
+            deploy_state.chezmoi_apply_attempted = false;
+            deploy_state.chezmoi_apply_succeeded = false;
+        }
+    }
+
+    save_deploy_state(&deploy_state)?;
     println!("apply: generated phase-1 artifacts in generated/");
     Ok(())
 }
@@ -73,7 +91,25 @@ pub fn sync() -> Result<()> {
 }
 
 pub fn rollback() -> Result<()> {
-    println!("rollback: scaffolded rollback command");
+    if !Path::new(DEPLOY_STATE_PATH).exists() {
+        println!("rollback: no deploy state found; nothing to do");
+        return Ok(());
+    }
+
+    let state = load_deploy_state()?;
+    restore_managed_targets(&state)?;
+
+    if state.chezmoi_apply_succeeded {
+        println!("rollback: previous chezmoi apply succeeded; local target restore completed");
+    } else {
+        println!("rollback: restored local targets from backups");
+    }
+
+    cleanup_generated_paths(&state)?;
+    if Path::new(DEPLOY_STATE_PATH).exists() {
+        fs::remove_file(DEPLOY_STATE_PATH)?;
+    }
+    println!("rollback: completed");
     Ok(())
 }
 
@@ -206,7 +242,7 @@ fn segment_to_chezmoi(segment: &str) -> String {
     segment.to_string()
 }
 
-fn maybe_run_chezmoi_diff(config: &PlatformConfig) -> Result<()> {
+fn maybe_run_chezmoi_diff(config: &PlatformConfig) -> Result<bool> {
     let enabled = config
         .tools
         .chezmoi
@@ -216,13 +252,13 @@ fn maybe_run_chezmoi_diff(config: &PlatformConfig) -> Result<()> {
 
     if !enabled {
         println!("chezmoi: disabled in config; skipping diff");
-        return Ok(());
+        return Ok(false);
     }
 
     run_chezmoi_subcommand("diff")
 }
 
-fn maybe_run_chezmoi_apply(config: &PlatformConfig) -> Result<()> {
+fn maybe_run_chezmoi_apply(config: &PlatformConfig) -> Result<bool> {
     let enabled = config
         .tools
         .chezmoi
@@ -232,16 +268,16 @@ fn maybe_run_chezmoi_apply(config: &PlatformConfig) -> Result<()> {
 
     if !enabled {
         println!("chezmoi: disabled in config; skipping apply");
-        return Ok(());
+        return Ok(false);
     }
 
     run_chezmoi_subcommand("apply")
 }
 
-fn run_chezmoi_subcommand(subcommand: &str) -> Result<()> {
+fn run_chezmoi_subcommand(subcommand: &str) -> Result<bool> {
     if !command_exists("chezmoi") {
         println!("chezmoi: not installed; skipping {subcommand}");
-        return Ok(());
+        return Ok(false);
     }
 
     let source_path = Path::new("generated/chezmoi/source-state");
@@ -262,7 +298,7 @@ fn run_chezmoi_subcommand(subcommand: &str) -> Result<()> {
     }
 
     println!("chezmoi: {} completed", subcommand);
-    Ok(())
+    Ok(true)
 }
 
 fn command_exists(command: &str) -> bool {
@@ -271,6 +307,124 @@ fn command_exists(command: &str) -> bool {
 
 fn home_dir() -> String {
     std::env::var("HOME").unwrap_or_else(|_| "~".to_string())
+}
+
+fn create_deploy_state(config: &PlatformConfig) -> Result<DeployState> {
+    fs::create_dir_all(ROLLBACK_BACKUP_ROOT)?;
+
+    let mut backups = Vec::new();
+    for managed in &config.managed_files {
+        let target_path = expand_target_path(&managed.target);
+        let existed = target_path.exists();
+        let backup_name = sanitize_target_for_backup(&managed.target);
+        let backup_path = Path::new(ROLLBACK_BACKUP_ROOT).join(format!("{backup_name}.bak"));
+
+        if existed {
+            if let Some(parent) = backup_path.parent() {
+                fs::create_dir_all(parent)?;
+            }
+            fs::copy(&target_path, &backup_path)?;
+        }
+
+        backups.push(ManagedBackup {
+            target: managed.target.clone(),
+            backup_path: backup_path.to_string_lossy().to_string(),
+            existed,
+        });
+    }
+
+    Ok(DeployState {
+        version: "phase-1".to_string(),
+        timestamp_unix: current_timestamp_unix(),
+        managed_backups: backups,
+        generated_paths: vec![
+            "generated/agents".to_string(),
+            "generated/atuin/config.toml".to_string(),
+            "generated/chezmoi/managed-files.toml".to_string(),
+            "generated/chezmoi/source-state".to_string(),
+            "generated/env/resolved.env".to_string(),
+        ],
+        chezmoi_apply_attempted: false,
+        chezmoi_apply_succeeded: false,
+    })
+}
+
+fn save_deploy_state(state: &DeployState) -> Result<()> {
+    let raw = serde_json::to_string_pretty(state)?;
+    let path = Path::new(DEPLOY_STATE_PATH);
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    fs::write(path, raw)?;
+    Ok(())
+}
+
+fn load_deploy_state() -> Result<DeployState> {
+    let raw = fs::read_to_string(DEPLOY_STATE_PATH)?;
+    let state: DeployState = serde_json::from_str(&raw)?;
+    Ok(state)
+}
+
+fn restore_managed_targets(state: &DeployState) -> Result<()> {
+    for backup in &state.managed_backups {
+        let target = expand_target_path(&backup.target);
+        let backup_path = Path::new(&backup.backup_path);
+
+        if backup.existed {
+            if !backup_path.exists() {
+                println!("rollback: missing backup for {}; skipping", backup.target);
+                continue;
+            }
+            if let Some(parent) = target.parent() {
+                fs::create_dir_all(parent)?;
+            }
+            fs::copy(backup_path, &target)?;
+        } else if target.exists() {
+            fs::remove_file(&target)?;
+        }
+    }
+
+    Ok(())
+}
+
+fn cleanup_generated_paths(state: &DeployState) -> Result<()> {
+    for path in &state.generated_paths {
+        let p = Path::new(path);
+        if p.is_dir() {
+            fs::remove_dir_all(p)?;
+        } else if p.is_file() {
+            fs::remove_file(p)?;
+        }
+    }
+
+    let backup_root = Path::new(ROLLBACK_BACKUP_ROOT);
+    if backup_root.exists() {
+        fs::remove_dir_all(backup_root)?;
+    }
+    Ok(())
+}
+
+fn sanitize_target_for_backup(target: &str) -> String {
+    target
+        .replace('~', "home")
+        .replace('/', "__")
+        .replace('.', "dot")
+        .replace(':', "_")
+}
+
+fn expand_target_path(target: &str) -> PathBuf {
+    if let Some(rest) = target.strip_prefix("~/") {
+        return Path::new(&home_dir()).join(rest);
+    }
+
+    PathBuf::from(target)
+}
+
+fn current_timestamp_unix() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|duration| duration.as_secs())
+        .unwrap_or(0)
 }
 
 #[cfg(test)]
@@ -284,5 +438,11 @@ mod tests {
 
         let mapped_template = map_target_to_chezmoi_path("~/.bashrc", true);
         assert_eq!(mapped_template, PathBuf::from("dot_bashrc.tmpl"));
+    }
+
+    #[test]
+    fn sanitize_target_for_backup_is_stable() {
+        let sanitized = sanitize_target_for_backup("~/.config/nushell/config.nu");
+        assert_eq!(sanitized, "home__dotconfig__nushell__configdotnu");
     }
 }

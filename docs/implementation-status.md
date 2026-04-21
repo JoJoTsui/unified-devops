@@ -22,6 +22,9 @@
 - Added generated Atuin config output in `generated/atuin/config.toml`.
 - Added Atuin bootstrap helper script `scripts/atuin-bootstrap.sh` and `just atuin-bootstrap` task.
 - Wired CLI integrate/apply flows to invoke `chezmoi diff/apply` when available (with safe skip when unavailable).
+- Added deploy-state persistence at `generated/state/deploy-state.json` during apply.
+- Added rollback backup snapshots under `generated/rollback-backups` and restore logic for managed targets.
+- Implemented rollback cleanup for generated artifacts and deploy-state metadata.
 - Seeded initial managed templates:
   - `templates/bash/dot_bashrc.tmpl`
   - `templates/nushell/config.nu`
@@ -46,4 +49,4 @@
 2. Add more deterministic profile precedence tests for host and interactive overrides.
 3. Wire bun/npm lockfile and reproducibility checks into CI tasks.
 4. Add Atuin login/key management flow for first-time host bootstrap.
-5. Add rollback path that can revert generated chezmoi-applied state safely.
+5. Add optional dry-run rollback mode for audit/preview before restore.
