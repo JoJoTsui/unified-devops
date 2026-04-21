@@ -94,7 +94,7 @@ fn default_context() -> Context {
             .and_then(|path| {
                 Path::new(&path)
                     .file_name()
-                    .map(|v| v.to_string_lossy().to_string())
+                    .map(|value| value.to_string_lossy().to_string())
             })
             .unwrap_or_else(|| "bash".to_string()),
         agent_ide: None,
@@ -107,22 +107,25 @@ fn write_generated(config: &PlatformConfig) -> Result<()> {
     let ctx = default_context();
     let profiles = resolve_profile(config, &ctx);
     let env = merged_env(&profiles);
+    let env_pairs: Vec<(String, String)> =
+        env.into_iter().map(|item| (item.key, item.value)).collect();
 
     fs::create_dir_all("generated/agents")?;
     fs::create_dir_all("generated/env")?;
 
     fs::write(
         "generated/agents/vscode.json",
-        render::render_vscode(config),
+        render::render_vscode(config, &env_pairs),
     )?;
     fs::write(
         "generated/agents/claude_code.json",
-        render::render_claude_code(config),
+        render::render_claude_code(config, &env_pairs),
     )?;
-    fs::write("generated/agents/kiro.json", render::render_kiro(config))?;
+    fs::write(
+        "generated/agents/kiro.json",
+        render::render_kiro(config, &env_pairs),
+    )?;
 
-    let env_pairs: Vec<(String, String)> =
-        env.into_iter().map(|item| (item.key, item.value)).collect();
     fs::write(
         "generated/env/resolved.env",
         render::render_env_pairs(&env_pairs),

@@ -1,24 +1,17 @@
-mod cli;
-mod integrations;
-mod model;
-mod render;
-mod resolver;
-mod state;
-
 use anyhow::Result;
 use clap::Parser;
-use cli::{Cli, Commands};
+use unified_shell_platform::cli::{Cli, Commands};
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Doctor => cli::doctor()?,
-        Commands::Plan => cli::plan()?,
-        Commands::Apply => cli::apply()?,
-        Commands::Sync => cli::sync()?,
-        Commands::Rollback => cli::rollback()?,
-        Commands::Integrate => cli::integrate()?,
+        Commands::Doctor => unified_shell_platform::cli::doctor()?,
+        Commands::Plan => unified_shell_platform::cli::plan()?,
+        Commands::Apply => unified_shell_platform::cli::apply()?,
+        Commands::Sync => unified_shell_platform::cli::sync()?,
+        Commands::Rollback => unified_shell_platform::cli::rollback()?,
+        Commands::Integrate => unified_shell_platform::cli::integrate()?,
     }
 
     Ok(())
