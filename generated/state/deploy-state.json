@@ -1,6 +1,6 @@
 {
   "version": "phase-1",
-  "timestamp_unix": 1776776304,
+  "timestamp_unix": 1776777736,
   "managed_backups": [
     {
       "target": "~/.bashrc",
@@ -25,6 +25,6 @@
     "generated/chezmoi/source-state",
     "generated/env/resolved.env"
   ],
-  "chezmoi_apply_attempted": false,
-  "chezmoi_apply_succeeded": false
+  "chezmoi_apply_attempted": true,
+  "chezmoi_apply_succeeded": true
 }

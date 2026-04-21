@@ -296,13 +296,20 @@ fn run_chezmoi_subcommand(subcommand: &str) -> Result<bool> {
     }
 
     let source_path = Path::new("generated/chezmoi/source-state");
-    let status = Command::new("chezmoi")
-        .arg(subcommand)
-        .arg("--source-path")
+    let mut command = Command::new("chezmoi");
+    command
+        .arg("-S")
         .arg(source_path)
-        .arg("--destination")
+        .arg("-D")
         .arg(home_dir())
-        .status()?;
+        .arg("--no-tty")
+        .arg(subcommand);
+
+    if subcommand == "apply" {
+        command.arg("--force");
+    }
+
+    let status = command.status()?;
 
     if !status.success() {
         return Err(anyhow::anyhow!(

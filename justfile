@@ -28,6 +28,9 @@ atuin-bootstrap:
 atuin-login:
 	./scripts/atuin-bootstrap.sh login
 
+atuin-register:
+	./scripts/atuin-bootstrap.sh register
+
 atuin-sync:
 	./scripts/atuin-bootstrap.sh sync
 

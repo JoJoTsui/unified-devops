@@ -20,8 +20,9 @@
 - Added generated chezmoi source-state tree under `generated/chezmoi/source-state`.
 - Added canonical Atuin settings model in `config/platform.toml`.
 - Added generated Atuin config output in `generated/atuin/config.toml`.
-- Added Atuin bootstrap helper script `scripts/atuin-bootstrap.sh` with `bootstrap`, `login`, `import`, `sync`, and `setup` modes.
+- Added Atuin bootstrap helper script `scripts/atuin-bootstrap.sh` with `bootstrap`, `login`, `register`, `import`, `sync`, and `setup` modes.
 - Added `just` tasks for Atuin bootstrap/login/sync/setup.
+- Added non-interactive Atuin credential flow support via ATUIN_USERNAME, ATUIN_PASSWORD, ATUIN_KEY, and ATUIN_EMAIL.
 - Wired CLI integrate/apply flows to invoke `chezmoi diff/apply` when available (with safe skip when unavailable).
 - Added deploy-state persistence at `generated/state/deploy-state.json` during apply.
 - Added rollback backup snapshots under `generated/rollback-backups` and restore logic for managed targets.
@@ -51,4 +52,4 @@
 2. Add more deterministic profile precedence tests for host and interactive overrides.
 3. Wire bun/npm lockfile and reproducibility checks into CI tasks.
 4. Add additional safety checks before live rollback on hosts with active sessions.
-5. Add host-aware detection for first-run Atuin state and login prompts.
+5. Add credential source hardening for Atuin auth automation.
