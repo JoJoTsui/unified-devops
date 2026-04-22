@@ -57,7 +57,6 @@
 
 - No compile blocker remains for the Rust scaffold on this host.
 - Core compiled tools are now installed (`chezmoi`, `atuin`, `just`) and integrated paths execute.
-- Remaining runtime/tooling gaps for full parity: `direnv` and `npm`.
 - Root Bun workspace lockfile is now generated at `bun.lock`; commit it to keep CI reproducibility checks green.
 - Atuin first-run auth still needs actual credential provisioning to complete account bootstrap on each host.
 
