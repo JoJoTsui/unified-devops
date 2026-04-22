@@ -43,5 +43,5 @@ This repo currently contains a runnable Phase 1 baseline:
 
 1. Expand renderer payloads to target-specific schemas.
 2. Add lockfile/reproducibility checks for skills and agents.
-3. Add resolver precedence edge-case coverage (host/interactive/profile ties).
-4. Add credential source hardening for Atuin auth automation.
+3. Add credential source hardening for Atuin auth automation.
+4. Add resolver tie-breaker policy coverage if profile model expands.
