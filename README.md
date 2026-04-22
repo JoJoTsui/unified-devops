@@ -44,4 +44,5 @@ This repo currently contains a runnable Phase 1 baseline:
 
 ## Next Steps
 
-1. Add resolver tie-breaker policy coverage if profile model expands.
+1. Add rollback guard extension for external lock/sentinel checks.
+2. Add resolver tie-breaker policy coverage if profile model expands.

@@ -1,0 +1,22 @@
+{
+  "lockfileVersion": 1,
+  "configVersion": 1,
+  "workspaces": {
+    "": {
+      "name": "unified-shell-platform",
+    },
+    "agents": {
+      "name": "unified-shell-platform-agents",
+      "version": "0.1.0",
+    },
+    "skills": {
+      "name": "unified-shell-platform-skills",
+      "version": "0.1.0",
+    },
+  },
+  "packages": {
+    "unified-shell-platform-agents": ["unified-shell-platform-agents@workspace:agents"],
+
+    "unified-shell-platform-skills": ["unified-shell-platform-skills@workspace:skills"],
+  }
+}

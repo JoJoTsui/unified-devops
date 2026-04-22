@@ -5,6 +5,30 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WORKSPACES=("skills" "agents")
 MODE="${1:-lockfiles}"
 
+root_lockfile() {
+  if [[ -f "$ROOT_DIR/bun.lock" ]]; then
+    printf "%s" "$ROOT_DIR/bun.lock"
+    return 0
+  fi
+
+  if [[ -f "$ROOT_DIR/bun.lockb" ]]; then
+    printf "%s" "$ROOT_DIR/bun.lockb"
+    return 0
+  fi
+
+  if [[ -f "$ROOT_DIR/package-lock.json" ]]; then
+    printf "%s" "$ROOT_DIR/package-lock.json"
+    return 0
+  fi
+
+  if [[ -f "$ROOT_DIR/npm-shrinkwrap.json" ]]; then
+    printf "%s" "$ROOT_DIR/npm-shrinkwrap.json"
+    return 0
+  fi
+
+  return 1
+}
+
 workspace_path() {
   local name="$1"
   printf "%s/%s" "$ROOT_DIR" "$name"
@@ -39,7 +63,14 @@ lockfile_for_workspace() {
 }
 
 check_lockfiles() {
+  local root_lock
   local missing=0
+
+  if root_lock="$(root_lockfile)"; then
+    printf "[repro] root lockfile ok: %s\n" "$root_lock"
+    printf "[repro] lockfile check passed\n"
+    return 0
+  fi
 
   for ws in "${WORKSPACES[@]}"; do
     if lockfile="$(lockfile_for_workspace "$ws")"; then
@@ -68,10 +99,8 @@ npm_ci_install() {
 
   check_lockfiles
 
-  for ws in "${WORKSPACES[@]}"; do
-    printf "[repro] npm ci --prefix %s\n" "$ws"
-    npm ci --ignore-scripts --prefix "$(workspace_path "$ws")"
-  done
+  printf "[repro] npm ci --ignore-scripts --prefix %s\n" "$ROOT_DIR"
+  npm ci --ignore-scripts --prefix "$ROOT_DIR"
 }
 
 bun_frozen_install() {
@@ -82,10 +111,8 @@ bun_frozen_install() {
 
   check_lockfiles
 
-  for ws in "${WORKSPACES[@]}"; do
-    printf "[repro] bun install --frozen-lockfile --cwd %s\n" "$ws"
-    bun install --frozen-lockfile --cwd "$(workspace_path "$ws")"
-  done
+  printf "[repro] bun install --frozen-lockfile --cwd %s\n" "$ROOT_DIR"
+  bun install --frozen-lockfile --cwd "$ROOT_DIR"
 }
 
 case "$MODE" in

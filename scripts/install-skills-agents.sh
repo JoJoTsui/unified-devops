@@ -7,26 +7,22 @@ MODE="${1:-auto}"
 
 install_with_bun() {
   printf "[install] using bun\n"
-  bun install --cwd "$ROOT_DIR/skills"
-  bun install --cwd "$ROOT_DIR/agents"
+  bun install --cwd "$ROOT_DIR"
 }
 
 install_with_npm() {
   printf "[install] using npm\n"
-  npm install --prefix "$ROOT_DIR/skills"
-  npm install --prefix "$ROOT_DIR/agents"
+  npm install --prefix "$ROOT_DIR"
 }
 
 install_with_npm_ci() {
   printf "[install] using npm ci\n"
-  npm ci --ignore-scripts --prefix "$ROOT_DIR/skills"
-  npm ci --ignore-scripts --prefix "$ROOT_DIR/agents"
+  npm ci --ignore-scripts --prefix "$ROOT_DIR"
 }
 
 install_with_bun_frozen() {
   printf "[install] using bun frozen lockfile\n"
-  bun install --frozen-lockfile --cwd "$ROOT_DIR/skills"
-  bun install --frozen-lockfile --cwd "$ROOT_DIR/agents"
+  bun install --frozen-lockfile --cwd "$ROOT_DIR"
 }
 
 case "$MODE" in
