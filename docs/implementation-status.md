@@ -41,11 +41,16 @@
   - `cargo run -- doctor`
   - `cargo run -- plan`
   - `cargo run -- apply`
+  - `cargo run -- integrate`
+  - `cargo run -- rollback --preview`
+  - `cargo run -- rollback --force --allow-active-sessions`
 
 ## Current blocker
 
 - No compile blocker remains for the Rust scaffold on this host.
-- Runtime dependency tools for full integration are not yet installed (`chezmoi`, `atuin`, `just`, `direnv`, `bun`, `npm`).
+- Core compiled tools are now installed (`chezmoi`, `atuin`, `just`) and integrated paths execute.
+- Remaining runtime/tooling gaps for full parity: `direnv`, `bun`, and `npm`.
+- Atuin auth still requires credential source hardening and first-run account bootstrap inputs.
 
 ## Next implementation items
 
