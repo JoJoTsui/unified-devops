@@ -37,10 +37,11 @@ This repo currently contains a runnable Phase 1 baseline:
 - CLI wiring for `chezmoi diff/apply` execution when chezmoi is installed
 - Deploy-state tracking and rollback restore flow for managed targets
 - Rollback preview mode via `cargo run -- rollback --preview`
+- Rollback safety gates: explicit `--force` for live rollback and active-session guard with `--allow-active-sessions`
 
 ## Next Steps
 
 1. Expand renderer payloads to target-specific schemas.
 2. Add lockfile/reproducibility checks for skills and agents.
-3. Add additional rollback safety checks for active sessions.
-4. Add credential source hardening for Atuin auth automation.
+3. Add credential source hardening for Atuin auth automation.
+4. Add resolver precedence edge-case coverage (host/interactive/profile ties).

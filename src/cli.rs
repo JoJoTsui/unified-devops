@@ -33,6 +33,10 @@ pub enum Commands {
     Rollback {
         #[arg(long)]
         preview: bool,
+        #[arg(long)]
+        force: bool,
+        #[arg(long)]
+        allow_active_sessions: bool,
     },
     Integrate,
 }
@@ -93,23 +97,43 @@ pub fn sync() -> Result<()> {
     Ok(())
 }
 
-pub fn rollback(preview: bool) -> Result<()> {
+pub fn rollback(preview: bool, force: bool, allow_active_sessions: bool) -> Result<()> {
     if !Path::new(DEPLOY_STATE_PATH).exists() {
         println!("rollback: no deploy state found; nothing to do");
         return Ok(());
     }
 
     let state = load_deploy_state()?;
+    let active_sessions = active_session_count_excluding_current()?;
 
     if preview {
         println!(
             "rollback preview: would restore {} managed targets",
             state.managed_backups.len()
         );
+        println!("rollback preview: active sessions (excluding current) = {active_sessions}");
+        if active_sessions > 0 {
+            println!(
+                "rollback preview: would block live rollback unless --allow-active-sessions is set"
+            );
+        }
         for line in rollback_preview_lines(&state) {
             println!("{line}");
         }
         return Ok(());
+    }
+
+    if !force {
+        return Err(anyhow::anyhow!(
+            "rollback blocked: pass --force to confirm live rollback"
+        ));
+    }
+
+    if active_sessions > 0 && !allow_active_sessions {
+        return Err(anyhow::anyhow!(
+            "rollback blocked: detected {} active session(s); rerun with --allow-active-sessions --force if intentional",
+            active_sessions
+        ));
     }
 
     restore_managed_targets(&state)?;
@@ -449,6 +473,57 @@ fn current_timestamp_unix() -> u64 {
         .unwrap_or(0)
 }
 
+fn active_session_count_excluding_current() -> Result<usize> {
+    if !command_exists("who") {
+        println!("rollback: 'who' not found; skipping active-session safety check");
+        return Ok(0);
+    }
+
+    let output = Command::new("who").output()?;
+    if !output.status.success() {
+        println!("rollback: failed to query active sessions with 'who'; skipping check");
+        return Ok(0);
+    }
+
+    let who_output = String::from_utf8_lossy(&output.stdout);
+    let current_tty = current_tty_name();
+    Ok(parse_who_active_sessions(
+        &who_output,
+        current_tty.as_deref(),
+    ))
+}
+
+fn current_tty_name() -> Option<String> {
+    if !command_exists("tty") {
+        return None;
+    }
+
+    let output = Command::new("tty").output().ok()?;
+    if !output.status.success() {
+        return None;
+    }
+
+    let tty = String::from_utf8_lossy(&output.stdout);
+    let trimmed = tty.trim();
+    if trimmed == "not a tty" || trimmed.is_empty() {
+        return None;
+    }
+
+    Some(trimmed.trim_start_matches("/dev/").to_string())
+}
+
+fn parse_who_active_sessions(who_output: &str, current_tty: Option<&str>) -> usize {
+    who_output
+        .lines()
+        .filter_map(|line| line.split_whitespace().nth(1))
+        .map(|tty| tty.trim_start_matches("/dev/"))
+        .filter(|tty| match current_tty {
+            Some(current) => *tty != current,
+            None => true,
+        })
+        .count()
+}
+
 fn rollback_preview_lines(state: &DeployState) -> Vec<String> {
     let mut lines = Vec::new();
     for backup in &state.managed_backups {
@@ -515,5 +590,12 @@ mod tests {
         assert!(lines
             .iter()
             .any(|line| line.contains("generated/env/resolved.env")));
+    }
+
+    #[test]
+    fn parse_who_active_sessions_excludes_current_tty() {
+        let who = "joey pts/0 2026-04-21 10:00\njoey pts/3 2026-04-21 10:01\n";
+        let count = parse_who_active_sessions(who, Some("pts/0"));
+        assert_eq!(count, 1);
     }
 }

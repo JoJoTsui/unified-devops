@@ -28,6 +28,7 @@
 - Added rollback backup snapshots under `generated/rollback-backups` and restore logic for managed targets.
 - Implemented rollback cleanup for generated artifacts and deploy-state metadata.
 - Added rollback preview mode via `cargo run -- rollback --preview` and `just rollback-preview`.
+- Added rollback safety gates: explicit `--force`, active-session detection, and `--allow-active-sessions` override.
 - Seeded initial managed templates:
   - `templates/bash/dot_bashrc.tmpl`
   - `templates/nushell/config.nu`
@@ -51,5 +52,5 @@
 1. Expand renderer payloads from placeholders to full target-specific schemas.
 2. Add more deterministic profile precedence tests for host and interactive overrides.
 3. Wire bun/npm lockfile and reproducibility checks into CI tasks.
-4. Add additional safety checks before live rollback on hosts with active sessions.
-5. Add credential source hardening for Atuin auth automation.
+4. Add credential source hardening for Atuin auth automation.
+5. Add rollback guard extension for external lock/sentinel checks.

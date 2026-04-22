@@ -10,7 +10,11 @@ fn main() -> Result<()> {
         Commands::Plan => unified_shell_platform::cli::plan()?,
         Commands::Apply => unified_shell_platform::cli::apply()?,
         Commands::Sync => unified_shell_platform::cli::sync()?,
-        Commands::Rollback { preview } => unified_shell_platform::cli::rollback(preview)?,
+        Commands::Rollback {
+            preview,
+            force,
+            allow_active_sessions,
+        } => unified_shell_platform::cli::rollback(preview, force, allow_active_sessions)?,
         Commands::Integrate => unified_shell_platform::cli::integrate()?,
     }
 

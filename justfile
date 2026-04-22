@@ -14,10 +14,16 @@ sync:
 	cargo run -- sync
 
 rollback:
-	cargo run -- rollback
+	cargo run -- rollback --preview
 
 rollback-preview:
 	cargo run -- rollback --preview
+
+rollback-force:
+	cargo run -- rollback --force
+
+rollback-force-active:
+	cargo run -- rollback --force --allow-active-sessions
 
 integrate:
 	cargo run -- integrate
