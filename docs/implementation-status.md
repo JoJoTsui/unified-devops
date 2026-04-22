@@ -23,6 +23,7 @@
 - Added Atuin bootstrap helper script `scripts/atuin-bootstrap.sh` with `bootstrap`, `login`, `register`, `import`, `sync`, and `setup` modes.
 - Added `just` tasks for Atuin bootstrap/login/sync/setup.
 - Added non-interactive Atuin credential flow support via ATUIN_USERNAME, ATUIN_PASSWORD, ATUIN_KEY, and ATUIN_EMAIL.
+- Added Atuin credential source hardening with secure `ATUIN_CREDENTIALS_FILE`, `ATUIN_PASSWORD_FILE`, and `ATUIN_KEY_FILE` inputs plus strict permissions checks.
 - Wired CLI integrate/apply flows to invoke `chezmoi diff/apply` when available (with safe skip when unavailable).
 - Added deploy-state persistence at `generated/state/deploy-state.json` during apply.
 - Added rollback backup snapshots under `generated/rollback-backups` and restore logic for managed targets.
@@ -51,12 +52,11 @@
 - No compile blocker remains for the Rust scaffold on this host.
 - Core compiled tools are now installed (`chezmoi`, `atuin`, `just`) and integrated paths execute.
 - Remaining runtime/tooling gaps for full parity: `direnv`, `bun`, and `npm`.
-- Atuin auth still requires credential source hardening and first-run account bootstrap inputs.
+- Atuin first-run auth still needs actual credential provisioning to complete account bootstrap on each host.
 
 ## Next implementation items
 
 1. Expand renderer payloads from placeholders to full target-specific schemas.
 2. Wire bun/npm lockfile and reproducibility checks into CI tasks.
-3. Add credential source hardening for Atuin auth automation.
-4. Add rollback guard extension for external lock/sentinel checks.
-5. Add additional resolver tie-breaker policy coverage if profile model grows.
+3. Add rollback guard extension for external lock/sentinel checks.
+4. Add additional resolver tie-breaker policy coverage if profile model grows.
