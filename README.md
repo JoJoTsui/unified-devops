@@ -33,6 +33,7 @@ This repo currently contains a runnable Phase 1 baseline:
 - Generated chezmoi manifest under `generated/chezmoi/managed-files.toml`
 - Generated chezmoi source-state tree under `generated/chezmoi/source-state`
 - Initial managed template payloads for bash, nushell, and starship
+- Expanded agent renderers to richer target-native payload schemas for VS Code, Claude Code, and Kiro
 - Atuin bootstrap helper script with bootstrap/login/register/import/sync/setup modes
 - Atuin credential hardening with secure file-based inputs and permission checks
 - CLI wiring for `chezmoi diff/apply` execution when chezmoi is installed
@@ -42,6 +43,5 @@ This repo currently contains a runnable Phase 1 baseline:
 
 ## Next Steps
 
-1. Expand renderer payloads to target-specific schemas.
-2. Add lockfile/reproducibility checks for skills and agents.
-3. Add resolver tie-breaker policy coverage if profile model expands.
+1. Add lockfile/reproducibility checks for skills and agents.
+2. Add resolver tie-breaker policy coverage if profile model expands.

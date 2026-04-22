@@ -14,6 +14,7 @@
 - Added profile overlays for OS/shell/agent context-aware variable resolution.
 - Added config loader wiring in CLI commands.
 - Added render outputs for VS Code, Claude Code, and Kiro into `generated/agents`.
+- Expanded renderer payloads to richer target-native schemas for VS Code, Claude Code, and Kiro.
 - Added resolved environment output into `generated/env/resolved.env`.
 - Added managed file mapping model and canonical config entries.
 - Added generated chezmoi manifest output in `generated/chezmoi/managed-files.toml`.
@@ -56,7 +57,6 @@
 
 ## Next implementation items
 
-1. Expand renderer payloads from placeholders to full target-specific schemas.
-2. Wire bun/npm lockfile and reproducibility checks into CI tasks.
-3. Add rollback guard extension for external lock/sentinel checks.
-4. Add additional resolver tie-breaker policy coverage if profile model grows.
+1. Wire bun/npm lockfile and reproducibility checks into CI tasks.
+2. Add rollback guard extension for external lock/sentinel checks.
+3. Add additional resolver tie-breaker policy coverage if profile model grows.

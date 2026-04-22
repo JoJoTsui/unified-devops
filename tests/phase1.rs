@@ -75,8 +75,11 @@ fn renders_agent_outputs_with_env_and_tool_summary() {
     let claude = render::render_claude_code(&config, &env_pairs);
     let kiro = render::render_kiro(&config, &env_pairs);
 
-    assert!(vscode.contains("\"agent\": \"vscode\""));
+    assert!(vscode.contains("\"$schema\": \"vscode://schemas/settings/default\""));
     assert!(vscode.contains("\"X\": \"1\""));
+    assert!(vscode.contains("\"unifiedShellPlatform.profile\": \"vscode\""));
+    assert!(claude.contains("\"metadata\""));
     assert!(claude.contains("\"agent\": \"claude_code\""));
+    assert!(kiro.contains("\"workspace\""));
     assert!(kiro.contains("\"agent\": \"kiro\""));
 }
