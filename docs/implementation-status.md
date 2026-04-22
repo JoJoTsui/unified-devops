@@ -37,9 +37,11 @@
   - `templates/nushell/config.nu`
   - `templates/starship/starship.toml`
 - Added JS workspace scaffolding (`skills`, `agents`) and bun/npm install flows.
+- Added JS lockfile/reproducibility checks and CI-oriented `just` tasks (`js-lockfiles-check`, `js-repro-npm`, `js-repro-bun`, `ci-check`).
 - Added helper scripts:
   - `scripts/bootstrap.sh`
   - `scripts/install-skills-agents.sh`
+  - `scripts/check-js-reproducibility.sh`
 - Validated command flow:
   - `cargo run -- doctor`
   - `cargo run -- plan`
@@ -53,10 +55,10 @@
 - No compile blocker remains for the Rust scaffold on this host.
 - Core compiled tools are now installed (`chezmoi`, `atuin`, `just`) and integrated paths execute.
 - Remaining runtime/tooling gaps for full parity: `direnv`, `bun`, and `npm`.
+- JS workspace lockfiles are not committed yet, so reproducibility gate intentionally fails until lockfiles are generated.
 - Atuin first-run auth still needs actual credential provisioning to complete account bootstrap on each host.
 
 ## Next implementation items
 
-1. Wire bun/npm lockfile and reproducibility checks into CI tasks.
-2. Add rollback guard extension for external lock/sentinel checks.
-3. Add additional resolver tie-breaker policy coverage if profile model grows.
+1. Add rollback guard extension for external lock/sentinel checks.
+2. Add additional resolver tie-breaker policy coverage if profile model grows.

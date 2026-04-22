@@ -17,12 +17,30 @@ install_with_npm() {
   npm install --prefix "$ROOT_DIR/agents"
 }
 
+install_with_npm_ci() {
+  printf "[install] using npm ci\n"
+  npm ci --ignore-scripts --prefix "$ROOT_DIR/skills"
+  npm ci --ignore-scripts --prefix "$ROOT_DIR/agents"
+}
+
+install_with_bun_frozen() {
+  printf "[install] using bun frozen lockfile\n"
+  bun install --frozen-lockfile --cwd "$ROOT_DIR/skills"
+  bun install --frozen-lockfile --cwd "$ROOT_DIR/agents"
+}
+
 case "$MODE" in
   bun)
     install_with_bun
     ;;
   npm)
     install_with_npm
+    ;;
+  npm-ci)
+    install_with_npm_ci
+    ;;
+  bun-frozen)
+    install_with_bun_frozen
     ;;
   auto)
     if command -v bun >/dev/null 2>&1; then
@@ -35,7 +53,7 @@ case "$MODE" in
     fi
     ;;
   *)
-    printf "usage: %s [auto|bun|npm]\n" "$0" >&2
+    printf "usage: %s [auto|bun|npm|npm-ci|bun-frozen]\n" "$0" >&2
     exit 2
     ;;
 esac

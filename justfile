@@ -42,3 +42,20 @@ atuin-sync:
 
 atuin-setup:
 	./scripts/atuin-bootstrap.sh setup
+
+js-install:
+	./scripts/install-skills-agents.sh auto
+
+js-lockfiles-check:
+	./scripts/check-js-reproducibility.sh lockfiles
+
+js-repro-npm:
+	./scripts/check-js-reproducibility.sh npm-ci
+
+js-repro-bun:
+	./scripts/check-js-reproducibility.sh bun-frozen
+
+ci-check:
+	cargo fmt --check
+	cargo test
+	./scripts/check-js-reproducibility.sh lockfiles

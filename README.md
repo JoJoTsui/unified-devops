@@ -36,6 +36,7 @@ This repo currently contains a runnable Phase 1 baseline:
 - Expanded agent renderers to richer target-native payload schemas for VS Code, Claude Code, and Kiro
 - Atuin bootstrap helper script with bootstrap/login/register/import/sync/setup modes
 - Atuin credential hardening with secure file-based inputs and permission checks
+- JS reproducibility task wiring with lockfile checks and CI-oriented install tasks
 - CLI wiring for `chezmoi diff/apply` execution when chezmoi is installed
 - Deploy-state tracking and rollback restore flow for managed targets
 - Rollback preview mode via `cargo run -- rollback --preview`
@@ -43,5 +44,4 @@ This repo currently contains a runnable Phase 1 baseline:
 
 ## Next Steps
 
-1. Add lockfile/reproducibility checks for skills and agents.
-2. Add resolver tie-breaker policy coverage if profile model expands.
+1. Add resolver tie-breaker policy coverage if profile model expands.
