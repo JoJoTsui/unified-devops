@@ -45,4 +45,4 @@ This repo currently contains a runnable Phase 1 baseline:
 
 ## Next Steps
 
-1. Add resolver tie-breaker policy coverage if profile model expands.
+1. Commit and ship current Phase 1 baseline.

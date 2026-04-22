@@ -33,6 +33,7 @@
 - Added rollback safety gates: explicit `--force`, active-session detection, and `--allow-active-sessions` override.
 - Added rollback external guard extension for sentinel/lock files with `--allow-external-locks` override and preview reporting.
 - Added resolver edge-case tests for host/interactive matching and deterministic env precedence.
+- Added resolver tie-breaker policy ordering: less-specific profiles apply before more-specific profiles, with declaration order preserved for equal specificity.
 - Seeded initial managed templates:
   - `templates/bash/dot_bashrc.tmpl`
   - `templates/nushell/config.nu`
@@ -62,4 +63,4 @@
 
 ## Next implementation items
 
-1. Add additional resolver tie-breaker policy coverage if profile model grows.
+None pending for the current Phase 1 scope.

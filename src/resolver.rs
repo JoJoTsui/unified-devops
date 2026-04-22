@@ -10,11 +10,36 @@ pub struct Context {
 }
 
 pub fn resolve_profile<'a>(config: &'a PlatformConfig, ctx: &Context) -> Vec<&'a Profile> {
-    config
+    let mut matched: Vec<(usize, &Profile)> = config
         .profiles
         .iter()
-        .filter(|profile| matches_context(profile, ctx))
-        .collect()
+        .enumerate()
+        .filter(|(_, profile)| matches_context(profile, ctx))
+        .map(|(index, profile)| (index, profile))
+        .collect();
+
+    matched.sort_by_key(|(index, profile)| (profile_specificity(profile), *index));
+    matched.into_iter().map(|(_, profile)| profile).collect()
+}
+
+fn profile_specificity(profile: &Profile) -> u8 {
+    let mut score = 0;
+    if profile.os.is_some() {
+        score += 1;
+    }
+    if profile.shell.is_some() {
+        score += 1;
+    }
+    if profile.agent_ide.is_some() {
+        score += 1;
+    }
+    if profile.host_profile.is_some() {
+        score += 1;
+    }
+    if profile.interactive.is_some() {
+        score += 1;
+    }
+    score
 }
 
 fn matches_context(profile: &Profile, ctx: &Context) -> bool {
@@ -178,5 +203,91 @@ mod tests {
             .find(|item| item.key == "EDITOR")
             .map(|item| item.value.as_str());
         assert_eq!(editor, Some("nvim"));
+    }
+
+    #[test]
+    fn resolve_profile_prefers_more_specific_profile_even_if_declared_earlier() {
+        let config = base_config(vec![
+            Profile {
+                name: "agent-overlay".into(),
+                shell: Some("bash".into()),
+                agent_ide: Some("kiro".into()),
+                vars: vec![EnvVar {
+                    key: "EDITOR".into(),
+                    value: "nvim".into(),
+                }],
+                ..Default::default()
+            },
+            Profile {
+                name: "base".into(),
+                vars: vec![EnvVar {
+                    key: "EDITOR".into(),
+                    value: "vim".into(),
+                }],
+                ..Default::default()
+            },
+        ]);
+
+        let ctx = Context {
+            os: std::env::consts::OS.to_string(),
+            shell: "bash".into(),
+            agent_ide: Some("kiro".into()),
+            host_profile: Some("default".into()),
+            interactive: true,
+        };
+
+        let resolved = resolve_profile(&config, &ctx);
+        assert_eq!(resolved[0].name, "base");
+        assert_eq!(resolved[1].name, "agent-overlay");
+
+        let merged = merged_env(&resolved);
+        let editor = merged
+            .iter()
+            .find(|item| item.key == "EDITOR")
+            .map(|item| item.value.as_str());
+        assert_eq!(editor, Some("nvim"));
+    }
+
+    #[test]
+    fn resolve_profile_keeps_config_order_for_equal_specificity() {
+        let config = base_config(vec![
+            Profile {
+                name: "shell-a".into(),
+                shell: Some("bash".into()),
+                vars: vec![EnvVar {
+                    key: "PROMPT".into(),
+                    value: "a".into(),
+                }],
+                ..Default::default()
+            },
+            Profile {
+                name: "shell-b".into(),
+                shell: Some("bash".into()),
+                vars: vec![EnvVar {
+                    key: "PROMPT".into(),
+                    value: "b".into(),
+                }],
+                ..Default::default()
+            },
+        ]);
+
+        let ctx = Context {
+            os: std::env::consts::OS.to_string(),
+            shell: "bash".into(),
+            agent_ide: None,
+            host_profile: Some("default".into()),
+            interactive: true,
+        };
+
+        let resolved = resolve_profile(&config, &ctx);
+        assert_eq!(resolved[0].name, "shell-a");
+        assert_eq!(resolved[1].name, "shell-b");
+
+        let merged = merged_env(&resolved);
+        let prompt = merged
+            .iter()
+            .find(|item| item.key == "PROMPT")
+            .map(|item| item.value.as_str());
+        assert_eq!(prompt, Some("b"));
     }
 }
