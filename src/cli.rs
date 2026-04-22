@@ -5,6 +5,7 @@ use crate::resolver::{merged_env, resolve_profile, Context};
 use crate::state::{DeployState, ManagedBackup};
 use anyhow::Result;
 use clap::{Parser, Subcommand};
+use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -12,6 +13,15 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 const DEPLOY_STATE_PATH: &str = "generated/state/deploy-state.json";
 const ROLLBACK_BACKUP_ROOT: &str = "generated/rollback-backups";
+const ROLLBACK_GUARD_ENV: &str = "UNIFIED_SHELL_ROLLBACK_GUARDS";
+const DEFAULT_ROLLBACK_GUARD_CANDIDATES: [&str; 6] = [
+    "generated/state/rollback.lock",
+    "generated/state/rollback.sentinel",
+    ".rollback.lock",
+    ".rollback.sentinel",
+    "/tmp/unified-shell-platform.rollback.lock",
+    "/var/tmp/unified-shell-platform.rollback.lock",
+];
 
 #[derive(Debug, Parser)]
 #[command(
@@ -37,6 +47,8 @@ pub enum Commands {
         force: bool,
         #[arg(long)]
         allow_active_sessions: bool,
+        #[arg(long)]
+        allow_external_locks: bool,
     },
     Integrate,
 }
@@ -97,7 +109,12 @@ pub fn sync() -> Result<()> {
     Ok(())
 }
 
-pub fn rollback(preview: bool, force: bool, allow_active_sessions: bool) -> Result<()> {
+pub fn rollback(
+    preview: bool,
+    force: bool,
+    allow_active_sessions: bool,
+    allow_external_locks: bool,
+) -> Result<()> {
     if !Path::new(DEPLOY_STATE_PATH).exists() {
         println!("rollback: no deploy state found; nothing to do");
         return Ok(());
@@ -105,6 +122,7 @@ pub fn rollback(preview: bool, force: bool, allow_active_sessions: bool) -> Resu
 
     let state = load_deploy_state()?;
     let active_sessions = active_session_count_excluding_current()?;
+    let external_guards = existing_rollback_guard_paths();
 
     if preview {
         println!(
@@ -116,6 +134,18 @@ pub fn rollback(preview: bool, force: bool, allow_active_sessions: bool) -> Resu
             println!(
                 "rollback preview: would block live rollback unless --allow-active-sessions is set"
             );
+        }
+        println!(
+            "rollback preview: external rollback guard files detected = {}",
+            external_guards.len()
+        );
+        if !external_guards.is_empty() {
+            println!(
+                "rollback preview: would block live rollback unless --allow-external-locks is set"
+            );
+            for guard in &external_guards {
+                println!("rollback preview: external guard file {guard}");
+            }
         }
         for line in rollback_preview_lines(&state) {
             println!("{line}");
@@ -133,6 +163,13 @@ pub fn rollback(preview: bool, force: bool, allow_active_sessions: bool) -> Resu
         return Err(anyhow::anyhow!(
             "rollback blocked: detected {} active session(s); rerun with --allow-active-sessions --force if intentional",
             active_sessions
+        ));
+    }
+
+    if !external_guards.is_empty() && !allow_external_locks {
+        return Err(anyhow::anyhow!(
+            "rollback blocked: detected external rollback guard files [{}]; rerun with --allow-external-locks --force if intentional",
+            external_guards.join(", ")
         ));
     }
 
@@ -524,6 +561,52 @@ fn parse_who_active_sessions(who_output: &str, current_tty: Option<&str>) -> usi
         .count()
 }
 
+fn rollback_guard_candidates_from_env(env_value: Option<&str>) -> Vec<String> {
+    let mut candidates = Vec::new();
+
+    for default in DEFAULT_ROLLBACK_GUARD_CANDIDATES {
+        candidates.push(default.to_string());
+    }
+
+    if let Some(raw) = env_value {
+        for part in raw.split(':') {
+            let trimmed = part.trim();
+            if !trimmed.is_empty() {
+                candidates.push(trimmed.to_string());
+            }
+        }
+    }
+
+    candidates
+}
+
+fn existing_rollback_guard_paths() -> Vec<String> {
+    let env_value = std::env::var(ROLLBACK_GUARD_ENV).ok();
+    let candidates = rollback_guard_candidates_from_env(env_value.as_deref());
+    existing_paths(&candidates)
+}
+
+fn existing_paths(candidates: &[String]) -> Vec<String> {
+    let mut seen = BTreeSet::new();
+    let mut existing = Vec::new();
+
+    for candidate in candidates {
+        if candidate.is_empty() {
+            continue;
+        }
+
+        let path = Path::new(candidate);
+        if path.exists() {
+            let normalized = candidate.to_string();
+            if seen.insert(normalized.clone()) {
+                existing.push(normalized);
+            }
+        }
+    }
+
+    existing
+}
+
 fn rollback_preview_lines(state: &DeployState) -> Vec<String> {
     let mut lines = Vec::new();
     for backup in &state.managed_backups {
@@ -597,5 +680,45 @@ mod tests {
         let who = "joey pts/0 2026-04-21 10:00\njoey pts/3 2026-04-21 10:01\n";
         let count = parse_who_active_sessions(who, Some("pts/0"));
         assert_eq!(count, 1);
+    }
+
+    #[test]
+    fn rollback_guard_candidates_include_defaults_and_env_paths() {
+        let candidates = rollback_guard_candidates_from_env(Some(
+            " /tmp/custom.rollback.lock : generated/state/custom.guard : ",
+        ));
+
+        assert!(candidates
+            .iter()
+            .any(|value| value == "generated/state/rollback.lock"));
+        assert!(candidates
+            .iter()
+            .any(|value| value == "generated/state/rollback.sentinel"));
+        assert!(candidates
+            .iter()
+            .any(|value| value == "/tmp/custom.rollback.lock"));
+        assert!(candidates
+            .iter()
+            .any(|value| value == "generated/state/custom.guard"));
+    }
+
+    #[test]
+    fn existing_paths_returns_existing_unique_entries() {
+        let temp = std::env::temp_dir().join(format!(
+            "unified-shell-platform-test-{}",
+            current_timestamp_unix()
+        ));
+        fs::write(&temp, "lock").expect("write temp rollback guard");
+
+        let existing = existing_paths(&[
+            temp.to_string_lossy().to_string(),
+            temp.to_string_lossy().to_string(),
+            "/tmp/does-not-exist-unified-shell-platform".to_string(),
+        ]);
+
+        assert_eq!(existing.len(), 1);
+        assert_eq!(existing[0], temp.to_string_lossy());
+
+        fs::remove_file(temp).expect("cleanup temp rollback guard");
     }
 }

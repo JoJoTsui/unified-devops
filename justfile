@@ -25,6 +25,9 @@ rollback-force:
 rollback-force-active:
 	cargo run -- rollback --force --allow-active-sessions
 
+rollback-force-all:
+	cargo run -- rollback --force --allow-active-sessions --allow-external-locks
+
 integrate:
 	cargo run -- integrate
 

@@ -14,7 +14,13 @@ fn main() -> Result<()> {
             preview,
             force,
             allow_active_sessions,
-        } => unified_shell_platform::cli::rollback(preview, force, allow_active_sessions)?,
+            allow_external_locks,
+        } => unified_shell_platform::cli::rollback(
+            preview,
+            force,
+            allow_active_sessions,
+            allow_external_locks,
+        )?,
         Commands::Integrate => unified_shell_platform::cli::integrate()?,
     }
 

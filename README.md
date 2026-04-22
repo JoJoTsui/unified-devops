@@ -41,8 +41,8 @@ This repo currently contains a runnable Phase 1 baseline:
 - Deploy-state tracking and rollback restore flow for managed targets
 - Rollback preview mode via `cargo run -- rollback --preview`
 - Rollback safety gates: explicit `--force` for live rollback and active-session guard with `--allow-active-sessions`
+- Rollback external lock/sentinel guard with `--allow-external-locks` override
 
 ## Next Steps
 
-1. Add rollback guard extension for external lock/sentinel checks.
-2. Add resolver tie-breaker policy coverage if profile model expands.
+1. Add resolver tie-breaker policy coverage if profile model expands.

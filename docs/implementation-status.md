@@ -31,6 +31,7 @@
 - Implemented rollback cleanup for generated artifacts and deploy-state metadata.
 - Added rollback preview mode via `cargo run -- rollback --preview` and `just rollback-preview`.
 - Added rollback safety gates: explicit `--force`, active-session detection, and `--allow-active-sessions` override.
+- Added rollback external guard extension for sentinel/lock files with `--allow-external-locks` override and preview reporting.
 - Added resolver edge-case tests for host/interactive matching and deterministic env precedence.
 - Seeded initial managed templates:
   - `templates/bash/dot_bashrc.tmpl`
@@ -49,6 +50,7 @@
   - `cargo run -- integrate`
   - `cargo run -- rollback --preview`
   - `cargo run -- rollback --force --allow-active-sessions`
+  - `cargo run -- rollback --force --allow-active-sessions --allow-external-locks`
 
 ## Current blocker
 
@@ -60,5 +62,4 @@
 
 ## Next implementation items
 
-1. Add rollback guard extension for external lock/sentinel checks.
-2. Add additional resolver tie-breaker policy coverage if profile model grows.
+1. Add additional resolver tie-breaker policy coverage if profile model grows.
