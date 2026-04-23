@@ -1,0 +1,57 @@
+name: base
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  # Shell & Environment
+  - bash
+  - nushell
+  - starship
+  - zoxide
+  - atuin
+  - direnv
+  - vivid
+  # Navigation & Search
+  - fzf
+  - fd-find
+  - ripgrep
+  - ripgrep-all
+  - skim
+  - yazi
+  # File & Data Handling
+  - bat
+  - eza
+  - lsdeluxe
+  - jq
+  - go-yq
+  - jless
+  - hexyl
+  - glow-md
+  - uutils-coreutils
+  # Version Control
+  - git
+  - git-lfs
+  - gh
+  - git-delta
+  - gitui
+  - difftastic
+  - chezmoi
+  # Editors & Multiplexers
+  - nvim
+  - helix
+  - zellij
+  # Development & Runtimes
+  - nodejs
+  - fnm
+  - uv
+  - pixi
+  - just
+  - hyperfine
+  - ruff
+  - shellcheck
+  # System Monitoring
+  - bottom
+  - dua-cli
+  - nvtop
+  - tealdeer
+  - parallel

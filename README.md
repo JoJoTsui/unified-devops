@@ -46,3 +46,14 @@ This repo currently contains a runnable Phase 1 baseline:
 ## Next Steps
 
 1. Commit and ship current Phase 1 baseline.
+
+
+## `micromamba`
+micromamba install -n base -c conda-forge \
+  bash nushell starship zoxide atuin direnv vivid \
+  fzf fd-find ripgrep ripgrep-all skim yazi \
+  bat eza lsdeluxe jq go-yq jless hexyl glow-md uutils-coreutils \
+  git git-lfs gh git-delta gitui difftastic chezmoi \
+  nvim helix zellij \
+  nodejs fnm uv pixi just hyperfine ruff shellcheck \
+  bottom dua-cli nvtop tealdeer parallel
